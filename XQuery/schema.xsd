@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="data">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="row" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="id" type="xs:int"/>
+                            <xs:element name="name" type="xs:string"/>
+                            <xs:element name="state">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="state_id" type="xs:int"/>
+                                        <xs:element name="state_code" type="xs:string"/>
+                                        <xs:element name="state_name" type="xs:string"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="country">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="country_id" type="xs:int"/>
+                                        <xs:element name="country_code" type="xs:string"/>
+                                        <xs:element name="country_name" type="xs:string"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="latitude" type="xs:float"/>
+                            <xs:element name="longitude" type="xs:float"/>
+                            <xs:element name="wikiDataId" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
