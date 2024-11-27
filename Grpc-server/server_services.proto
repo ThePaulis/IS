@@ -1,0 +1,16 @@
+syntax='proto3';
+package server_Services;
+
+message SendFileRequestBody{
+  bytes file =1;
+  string file_mime = 2;
+  string file_name = 3;
+}
+
+message SendFileResponseBody {
+  bool success = 1;
+}
+
+service SendFileService{
+  rpc SendFile (SendFileRequestBody) returns (SendFileResponseBody);
+}
