@@ -1,0 +1,6 @@
+grpcio
+grpcio-tools
+pandas
+pg8000
+lxml
+BaseXClient

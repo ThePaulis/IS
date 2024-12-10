@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package server_services;
+
+message FileRequest {
+  bytes file = 1;         // Binary content of the file
+  string file_name = 2;   // File name without extension
+}
+
+message CsvToXmlResponse {
+  string xml_content = 1; // Converted XML content
+}
+
+service FileProcessingService {
+  rpc ConvertCsvToXml (FileRequest) returns (CsvToXmlResponse);
+}

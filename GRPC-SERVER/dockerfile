@@ -1,0 +1,29 @@
+# Use a Python base image
+FROM python:3.10-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the requirements file (assuming you have one)
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code
+COPY . .
+
+# Ensure lxml dependencies are installed
+RUN apt-get update && apt-get install -y \
+    libxml2-dev \
+    libxslt1-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install additional Python libraries
+RUN pip install lxml grpcio grpcio-tools pandas pg8000 BaseXClient
+
+# Expose the gRPC server port
+EXPOSE 50051
+
+# Set the command to run the server
+CMD ["python", "main.py"]
