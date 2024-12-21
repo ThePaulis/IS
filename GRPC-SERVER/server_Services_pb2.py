@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15server_Services.proto\x12\x0fserver_services\".\n\x0b\x46ileRequest\x12\x0c\n\x04\x66ile\x18\x01 \x01(\x0c\x12\x11\n\tfile_name\x18\x02 \x01(\t\"\'\n\x10\x43svToXmlResponse\x12\x13\n\x0bxml_content\x18\x01 \x01(\t\"8\n\rSubXmlRequest\x12\x0f\n\x07\x66ile_id\x18\x01 \x01(\x05\x12\x16\n\x0ewarehouse_name\x18\x02 \x01(\t\"(\n\x0eSubXmlResponse\x12\x16\n\x0esubxml_content\x18\x01 \x01(\t2\xb9\x01\n\x15\x46ileProcessingService\x12R\n\x0f\x43onvertCsvToXml\x12\x1c.server_services.FileRequest\x1a!.server_services.CsvToXmlResponse\x12L\n\tGetSubXml\x12\x1e.server_services.SubXmlRequest\x1a\x1f.server_services.SubXmlResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15server_Services.proto\x12\x0fserver_services\".\n\x0b\x46ileRequest\x12\x0c\n\x04\x66ile\x18\x01 \x01(\x0c\x12\x11\n\tfile_name\x18\x02 \x01(\t\"\'\n\x10\x43svToXmlResponse\x12\x13\n\x0bxml_content\x18\x01 \x01(\t\"8\n\rSubXmlRequest\x12\x0f\n\x07\x66ile_id\x18\x01 \x01(\x05\x12\x16\n\x0ewarehouse_name\x18\x02 \x01(\t\"(\n\x0eSubXmlResponse\x12\x16\n\x0esubxml_content\x18\x01 \x01(\t\"8\n\x15SendFileChunksRequest\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x12\x11\n\tfile_name\x18\x02 \x01(\t\":\n\x16SendFileChunksResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t2\xb9\x01\n\x15\x46ileProcessingService\x12R\n\x0f\x43onvertCsvToXml\x12\x1c.server_services.FileRequest\x1a!.server_services.CsvToXmlResponse\x12L\n\tGetSubXml\x12\x1e.server_services.SubXmlRequest\x1a\x1f.server_services.SubXmlResponse2v\n\x0fSendFileService\x12\x63\n\x0eSendFileChunks\x12&.server_services.SendFileChunksRequest\x1a\'.server_services.SendFileChunksResponse(\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -39,6 +39,12 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_SUBXMLREQUEST']._serialized_end=187
   _globals['_SUBXMLRESPONSE']._serialized_start=189
   _globals['_SUBXMLRESPONSE']._serialized_end=229
-  _globals['_FILEPROCESSINGSERVICE']._serialized_start=232
-  _globals['_FILEPROCESSINGSERVICE']._serialized_end=417
+  _globals['_SENDFILECHUNKSREQUEST']._serialized_start=231
+  _globals['_SENDFILECHUNKSREQUEST']._serialized_end=287
+  _globals['_SENDFILECHUNKSRESPONSE']._serialized_start=289
+  _globals['_SENDFILECHUNKSRESPONSE']._serialized_end=347
+  _globals['_FILEPROCESSINGSERVICE']._serialized_start=350
+  _globals['_FILEPROCESSINGSERVICE']._serialized_end=535
+  _globals['_SENDFILESERVICE']._serialized_start=537
+  _globals['_SENDFILESERVICE']._serialized_end=655
 # @@protoc_insertion_point(module_scope)

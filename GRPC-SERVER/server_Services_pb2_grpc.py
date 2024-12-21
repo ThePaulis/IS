@@ -138,3 +138,75 @@ class FileProcessingService(object):
             timeout,
             metadata,
             _registered_method=True)
+
+
+class SendFileServiceStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.SendFileChunks = channel.stream_unary(
+                '/server_services.SendFileService/SendFileChunks',
+                request_serializer=server__Services__pb2.SendFileChunksRequest.SerializeToString,
+                response_deserializer=server__Services__pb2.SendFileChunksResponse.FromString,
+                _registered_method=True)
+
+
+class SendFileServiceServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def SendFileChunks(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_SendFileServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'SendFileChunks': grpc.stream_unary_rpc_method_handler(
+                    servicer.SendFileChunks,
+                    request_deserializer=server__Services__pb2.SendFileChunksRequest.FromString,
+                    response_serializer=server__Services__pb2.SendFileChunksResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'server_services.SendFileService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('server_services.SendFileService', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class SendFileService(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def SendFileChunks(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(
+            request_iterator,
+            target,
+            '/server_services.SendFileService/SendFileChunks',
+            server__Services__pb2.SendFileChunksRequest.SerializeToString,
+            server__Services__pb2.SendFileChunksResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
