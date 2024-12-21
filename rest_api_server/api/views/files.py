@@ -7,13 +7,13 @@ from django.db import connection
 class GetAllFiles(APIView):
     def get(self, request):
         with connection.cursor() as cursor:
-            cursor.execute("SELECT id, csv_file_path, xml_file_path FROM files")
+            cursor.execute("SELECT id, csv_path, xml_path FROM files")
             result = cursor.fetchall()
             files = [
                 {
                     "id": row[0],
-                    "csv_file_path": row[1],
-                    "xml_file_path": row[2]
+                    "csv_path": row[1],
+                    "xml_path": row[2]
                 }
                 for row in result
             ]

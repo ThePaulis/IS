@@ -39,12 +39,23 @@ class FileProcessingServiceStub(object):
                 request_serializer=server__Services__pb2.FileRequest.SerializeToString,
                 response_deserializer=server__Services__pb2.CsvToXmlResponse.FromString,
                 _registered_method=True)
+        self.GetSubXml = channel.unary_unary(
+                '/server_services.FileProcessingService/GetSubXml',
+                request_serializer=server__Services__pb2.SubXmlRequest.SerializeToString,
+                response_deserializer=server__Services__pb2.SubXmlResponse.FromString,
+                _registered_method=True)
 
 
 class FileProcessingServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def ConvertCsvToXml(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetSubXml(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -57,6 +68,11 @@ def add_FileProcessingServiceServicer_to_server(servicer, server):
                     servicer.ConvertCsvToXml,
                     request_deserializer=server__Services__pb2.FileRequest.FromString,
                     response_serializer=server__Services__pb2.CsvToXmlResponse.SerializeToString,
+            ),
+            'GetSubXml': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetSubXml,
+                    request_deserializer=server__Services__pb2.SubXmlRequest.FromString,
+                    response_serializer=server__Services__pb2.SubXmlResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -86,6 +102,33 @@ class FileProcessingService(object):
             '/server_services.FileProcessingService/ConvertCsvToXml',
             server__Services__pb2.FileRequest.SerializeToString,
             server__Services__pb2.CsvToXmlResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetSubXml(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/server_services.FileProcessingService/GetSubXml',
+            server__Services__pb2.SubXmlRequest.SerializeToString,
+            server__Services__pb2.SubXmlResponse.FromString,
             options,
             channel_credentials,
             insecure,

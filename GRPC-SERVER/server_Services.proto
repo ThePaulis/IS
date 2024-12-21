@@ -11,6 +11,16 @@ message CsvToXmlResponse {
   string xml_content = 1; // Converted XML content
 }
 
+message SubXmlRequest {
+  int32 file_id = 1;      // ID of the file in the database
+  string warehouse_name = 2; // Name of the warehouse
+}
+
+message SubXmlResponse {
+  string subxml_content = 1; // Sub XML content
+}
+
 service FileProcessingService {
   rpc ConvertCsvToXml (FileRequest) returns (CsvToXmlResponse);
+  rpc GetSubXml (SubXmlRequest) returns (SubXmlResponse);
 }

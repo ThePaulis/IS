@@ -1,11 +1,11 @@
 from django.urls import path
-from .views.file_views import FileUploadView
+from .views.file_views import FileUploadView, GetSubXmlView
 from .views.sales import GetAllSales
 from .views.files import GetAllFiles
 
 urlpatterns = [
     path('upload-file/', FileUploadView.as_view(), name='upload-file'),
-    path('sales/', GetAllSales.as_view(), name='sales')
-    path('files/', GetAllFiles.as_view(), name='files')
-
+    path('sales/', GetAllSales.as_view(), name='sales'),
+    path('files/', GetAllFiles.as_view(), name='files'),
+    path('subxml-warehouse-sales/', GetSubXmlView.as_view(), name='get-subxml')
 ]

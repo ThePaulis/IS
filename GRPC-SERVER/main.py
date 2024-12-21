@@ -23,11 +23,24 @@ def validate_csv(file_path):
 
 
 def save_csv_file(file_name, file_content):
-    csv_file_path = os.path.join(MEDIA_PATH, f"{file_name}.csv")
-    with open(csv_file_path, 'wb') as f:
+    temp_csv_file_path = os.path.join(MEDIA_PATH, f"{file_name}_temp.csv")
+    with open(temp_csv_file_path, 'wb') as f:
         f.write(file_content)
-    logger.info(f"CSV file saved successfully: {csv_file_path}")
-    return csv_file_path
+    
+    try:
+        # Validate the CSV content
+        validate_csv(temp_csv_file_path)
+        
+        # If valid, rename the temporary file to the final file name
+        csv_file_path = os.path.join(MEDIA_PATH, f"{file_name}.csv")
+        os.rename(temp_csv_file_path, csv_file_path)
+        logger.info(f"CSV file saved successfully: {csv_file_path}")
+        return csv_file_path
+    except ValueError as e:
+        # If invalid, delete the temporary file
+        os.remove(temp_csv_file_path)
+        logger.error(f"CSV file validation failed: {str(e)}")
+        raise
 
 
 def convert_csv_to_xml(csv_file_path):
@@ -38,7 +51,6 @@ def convert_csv_to_xml(csv_file_path):
         xml_file.write(xml_content)
     logger.info(f"XML file saved successfully: {xml_file_path}")
     return xml_content, xml_file_path
-
 
 def parse_xml(xml_content):
     xml_tree = etree.fromstring(xml_content.encode('utf-8'))
@@ -216,6 +228,38 @@ class FileProcessingService(server_Services_pb2_grpc.FileProcessingServiceServic
             context.set_code(grpc.StatusCode.INTERNAL)
             return server_Services_pb2.CsvToXmlResponse(xml_content="")
 
+    def GetSubXml(self, request, context):
+        try:
+            conn = pg8000.connect(
+                user=DBUSERNAME,
+                password=DBPASSWORD,
+                host=DBHOST,
+                port=int(DBPORT),
+                database=DBNAME
+            )
+            cursor = conn.cursor()
+            cursor.execute("SELECT xml_path FROM files WHERE id = %s", (request.file_id,))
+            result = cursor.fetchone()
+            if not result:
+                context.set_details(f"File with ID {request.file_id} not found")
+                context.set_code(grpc.StatusCode.NOT_FOUND)
+                return server_Services_pb2.SubXmlResponse(subxml_content="")
+
+            xml_file_path = result[0]
+            with open(xml_file_path, 'r', encoding='utf-8') as xml_file:
+                xml_content = xml_file.read()
+
+            xml_tree = etree.fromstring(xml_content.encode('utf-8'))
+            subxml_tree = xml_tree.xpath(f"//row[warehouse='{request.warehouse_name}']")
+            subxml_content = etree.tostring(subxml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
+
+            return server_Services_pb2.SubXmlResponse(subxml_content=subxml_content)
+        except Exception as e:
+            logger.error(f"Error during GetSubXml: {str(e)}", exc_info=True)
+            context.set_details(f"Error during GetSubXml: {str(e)}")
+            context.set_code(grpc.StatusCode.INTERNAL)
+            return server_Services_pb2.SubXmlResponse(subxml_content="")
+    
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=MAX_WORKERS))
