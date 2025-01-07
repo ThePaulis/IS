@@ -34,7 +34,9 @@ def save_csv_to_db(data):
     create_warehouse_table_query = """
         CREATE TABLE IF NOT EXISTS warehouse (
             id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL UNIQUE
+            name TEXT NOT NULL UNIQUE,
+            latitude NUMERIC,
+            longitude NUMERIC
         );
     """
     cursor.execute(create_warehouse_table_query)
@@ -84,6 +86,13 @@ def save_csv_to_db(data):
     client_type_ids = {}
     product_line_ids = {}
 
+    # Hardcoded latitude and longitude values for the warehouses
+    warehouse_locations = {
+        'Central': {'latitude': 39.8283, 'longitude': -98.5795},  # Geographic center of the contiguous United States
+        'North': {'latitude': 47.6062, 'longitude': -122.3321},  # Seattle, WA
+        'West': {'latitude': 34.0522, 'longitude': -118.2437}    # Los Angeles, CA
+    }
+
     for _, row in data.iterrows():
         warehouse_name = row['warehouse']
         payment_method = row['payment']
@@ -91,7 +100,10 @@ def save_csv_to_db(data):
         product_line = row['product_line']
 
         if warehouse_name not in warehouse_ids:
-            cursor.execute("INSERT INTO warehouse (name) VALUES (%s) ON CONFLICT (name) DO NOTHING RETURNING id;", (warehouse_name,))
+            cursor.execute(
+                "INSERT INTO warehouse (name, latitude, longitude) VALUES (%s, %s, %s) ON CONFLICT (name) DO NOTHING RETURNING id;",
+                (warehouse_name, warehouse_locations[warehouse_name]['latitude'], warehouse_locations[warehouse_name]['longitude'])
+            )
             warehouse_id = cursor.fetchone()
             if warehouse_id:
                 warehouse_ids[warehouse_name] = warehouse_id[0]
