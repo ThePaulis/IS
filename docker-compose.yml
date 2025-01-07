@@ -1,6 +1,6 @@
 services:
   grpc-server:
-    build: ./GRPC-SERVER
+    build: ./grpc-server
     container_name: grpc-server
     ports:
       - "50051:50051"
@@ -39,6 +39,20 @@ services:
       - db
       - grpc-server
 
+  graphql_api:
+    build: ./graphql_api
+    container_name: graphql_api
+    ports:
+      - "8001:8001"
+    environment:
+      - DBNAME=mydatabase
+      - DBUSERNAME=myuser
+      - DBPASSWORD=mypassword
+      - DBHOST=db
+      - DBPORT=5432
+    depends_on:
+      - db
+
   db:
     image: postgres:latest
     container_name: postgres-db
@@ -59,6 +73,7 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
+
   worker:
     build: ./worker-rabbit-csv
     ports: 
