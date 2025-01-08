@@ -107,8 +107,7 @@ class FileUploadChunksView(APIView):
                     yield server_services_pb2.SendFileChunksRequest(data=chunk, file_name=file_name)
             except Exception as e:
                 print(f"Error reading file: {e}")
-                raise # Let the exception propagate
-        # Send file data to gRPC service
+                raise
         try:
             response = stub.SendFileChunks(generate_file_chunks(file, file.name, (64 * 1024)))
             if response.success:

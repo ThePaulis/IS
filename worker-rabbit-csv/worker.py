@@ -5,6 +5,7 @@ import logging
 from io import StringIO
 import pandas as pd
 import pg8000
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,153 +22,162 @@ DBPASSWORD = os.getenv('DBPASSWORD', 'mypassword')
 DBNAME = os.getenv('DBNAME', 'mydatabase')
 DBPORT = os.getenv('DBPORT', '5432')
 
-# Configure logging
+# Configure
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 logger = logging.getLogger()
-reassembled_data = []  # Declare reassembled_data at the module level
+reassembled_data = []
 
 def save_csv_to_db(data):
+    """
+    Save the processed player data into the PostgreSQL database.
+    """
     conn = pg8000.connect(user=DBUSERNAME, password=DBPASSWORD, database=DBNAME, host=DBHOST, port=DBPORT)
     cursor = conn.cursor()
 
-    create_warehouse_table_query = """
-        CREATE TABLE IF NOT EXISTS warehouse (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL UNIQUE
-        );
-    """
-    cursor.execute(create_warehouse_table_query)
+    # Create tables for normalized data storage (same as before)
 
-    create_payment_table_query = """
-        CREATE TABLE IF NOT EXISTS payment (
-            id SERIAL PRIMARY KEY,
-            method TEXT NOT NULL UNIQUE
-        );
-    """
-    cursor.execute(create_payment_table_query)
+    # Clean and prepare data
+    data['birth_date'] = pd.to_datetime(data['birth_date'], errors='coerce').dt.date
 
-    create_client_type_table_query = """
-        CREATE TABLE IF NOT EXISTS client_type (
-            id SERIAL PRIMARY KEY,
-            type TEXT NOT NULL UNIQUE
-        );
-    """
-    cursor.execute(create_client_type_table_query)
+    # Define default fill values for each column type
+    fill_values = {
+        'name': "",
+        'full_name': "",
+        'birth_date': None,  # None will handle the date columns
+        'age': 0,
+        'height_cm': 0,
+        'weight_kgs': 0,
+        'nationality': "",
+        'preferred_foot': "",
+        'international_reputation': 0,
+        'weak_foot': 0,
+        'skill_moves': 0,
+        'body_type': "",
+        'release_clause_euro': 0,
+        'overall_rating': 0,
+        'potential': 0,
+        'national_rating': 0,
+        'national_team': "",
+        'national_team_position': "",
+        'national_jersey_number': 0,
+        'crossing': 0,
+        'finishing': 0,
+        'heading_accuracy': 0,
+        'short_passing': 0,
+        'volleys': 0,
+        'dribbling': 0,
+        'curve': 0,
+        'freekick_accuracy': 0,
+        'long_passing': 0,
+        'ball_control': 0,
+        'acceleration': 0,
+        'sprint_speed': 0,
+        'agility': 0,
+        'reactions': 0,
+        'balance': 0,
+        'shot_power': 0,
+        'jumping': 0,
+        'stamina': 0,
+        'strength': 0,
+        'long_shots': 0,
+        'aggression': 0,
+        'interceptions': 0,
+        'positioning': 0,
+        'vision': 0,
+        'penalties': 0,
+        'composure': 0,
+        'marking': 0,
+        'standing_tackle': 0,
+        'sliding_tackle': 0
+    }
 
-    create_product_line_table_query = """
-        CREATE TABLE IF NOT EXISTS product_line (
-            id SERIAL PRIMARY KEY,
-            line TEXT NOT NULL UNIQUE
-        );
-    """
-    cursor.execute(create_product_line_table_query)
+    # Fill missing values with specified defaults
+    data.fillna(fill_values, inplace=True)
 
-    create_sales_table_query = """
-        CREATE TABLE IF NOT EXISTS sales (
-            id SERIAL PRIMARY KEY,
-            date DATE NOT NULL,
-            warehouse_id INTEGER NOT NULL REFERENCES warehouse(id),
-            client_type_id INTEGER NOT NULL REFERENCES client_type(id),
-            product_line_id INTEGER NOT NULL REFERENCES product_line(id),
-            quantity INTEGER NOT NULL,
-            unit_price NUMERIC NOT NULL,
-            total NUMERIC NOT NULL,
-            payment_id INTEGER NOT NULL REFERENCES payment(id)
-        );
-    """
-    cursor.execute(create_sales_table_query)
-
-    # Insert data into the warehouse, payment, client_type, and product_line tables and get their IDs
-    warehouse_ids = {}
-    payment_ids = {}
-    client_type_ids = {}
-    product_line_ids = {}
-
+    # Insert data into tables
     for _, row in data.iterrows():
-        warehouse_name = row['warehouse']
-        payment_method = row['payment']
-        client_type = row['client_type']
-        product_line = row['product_line']
+        # Skip rows with missing required fields (e.g., 'name' should never be empty)
+        if pd.isna(row['name']) or row['name'] == "":
+            logger.warning("Skipping row with missing 'name'.")
+            continue
 
-        if warehouse_name not in warehouse_ids:
-            cursor.execute("INSERT INTO warehouse (name) VALUES (%s) ON CONFLICT (name) DO NOTHING RETURNING id;", (warehouse_name,))
-            warehouse_id = cursor.fetchone()
-            if warehouse_id:
-                warehouse_ids[warehouse_name] = warehouse_id[0]
-            else:
-                cursor.execute("SELECT id FROM warehouse WHERE name = %s;", (warehouse_name,))
-                warehouse_ids[warehouse_name] = cursor.fetchone()[0]
+        # Insert into `player` table
+        cursor.execute("""
+            INSERT INTO player (
+                name, full_name, birth_date, age, height_cm, weight_kgs, nationality, preferred_foot,
+                international_reputation, weak_foot, skill_moves, body_type, release_clause_euro
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (name) DO NOTHING
+            RETURNING id;
+        """, (
+            row['name'], row['full_name'], row['birth_date'], row['age'], row['height_cm'], row['weight_kgs'],
+            row['nationality'], row['preferred_foot'], row['international_reputation'], row['weak_foot'],
+            row['skill_moves'], row['body_type'], row['release_clause_euro']
+        ))
 
-        if payment_method not in payment_ids:
-            cursor.execute("INSERT INTO payment (method) VALUES (%s) ON CONFLICT (method) DO NOTHING RETURNING id;", (payment_method,))
-            payment_id = cursor.fetchone()
-            if payment_id:
-                payment_ids[payment_method] = payment_id[0]
-            else:
-                cursor.execute("SELECT id FROM payment WHERE method = %s;", (payment_method,))
-                payment_ids[payment_method] = cursor.fetchone()[0]
+        player_id = cursor.fetchone()
+        if not player_id:
+            cursor.execute("SELECT id FROM player WHERE name = %s;", (row['name'],))
+            player_id = cursor.fetchone()[0]
+        else:
+            player_id = player_id[0]
 
-        if client_type not in client_type_ids:
-            cursor.execute("INSERT INTO client_type (type) VALUES (%s) ON CONFLICT (type) DO NOTHING RETURNING id;", (client_type,))
-            client_type_id = cursor.fetchone()
-            if client_type_id:
-                client_type_ids[client_type] = client_type_id[0]
-            else:
-                cursor.execute("SELECT id FROM client_type WHERE type = %s;", (client_type,))
-                client_type_ids[client_type] = cursor.fetchone()[0]
+        # Insert into `rating` table
+        cursor.execute("""
+            INSERT INTO rating (player_id, overall_rating, potential, national_rating)
+            VALUES (%s, %s, %s, %s);
+        """, (player_id, row['overall_rating'], row['potential'], row['national_rating']))
 
-        if product_line not in product_line_ids:
-            cursor.execute("INSERT INTO product_line (line) VALUES (%s) ON CONFLICT (line) DO NOTHING RETURNING id;", (product_line,))
-            product_line_id = cursor.fetchone()
-            if product_line_id:
-                product_line_ids[product_line] = product_line_id[0]
-            else:
-                cursor.execute("SELECT id FROM product_line WHERE line = %s;", (product_line,))
-                product_line_ids[product_line] = cursor.fetchone()[0]
+        # Insert into `team` table
+        cursor.execute("""
+            INSERT INTO team (player_id, national_team, national_team_position, national_jersey_number)
+            VALUES (%s, %s, %s, %s);
+        """, (player_id, row['national_team'], row['national_team_position'], row['national_jersey_number']))
 
-    # Insert data into the sales table
-    insert_sales_query = """
-        INSERT INTO sales (date, warehouse_id, client_type_id, product_line_id, quantity, unit_price, total, payment_id)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
-    """
-    for _, row in data.iterrows():
-        cursor.execute(insert_sales_query, (
-            row['date'],
-            warehouse_ids[row['warehouse']],
-            client_type_ids[row['client_type']],
-            product_line_ids[row['product_line']],
-            row['quantity'],
-            row['unit_price'],
-            row['total'],
-            payment_ids[row['payment']]
+        # Insert into `attributes` table
+        cursor.execute("""
+            INSERT INTO attributes (
+                player_id, crossing, finishing, heading_accuracy, short_passing, volleys, dribbling, curve,
+                freekick_accuracy, long_passing, ball_control, acceleration, sprint_speed, agility, reactions,
+                balance, shot_power, jumping, stamina, strength, long_shots, aggression, interceptions, positioning,
+                vision, penalties, composure, marking, standing_tackle, sliding_tackle
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+        """, (
+            player_id, row['crossing'], row['finishing'], row['heading_accuracy'], row['short_passing'], row['volleys'],
+            row['dribbling'], row['curve'], row['freekick_accuracy'], row['long_passing'], row['ball_control'],
+            row['acceleration'], row['sprint_speed'], row['agility'], row['reactions'], row['balance'], row['shot_power'],
+            row['jumping'], row['stamina'], row['strength'], row['long_shots'], row['aggression'], row['interceptions'],
+            row['positioning'], row['vision'], row['penalties'], row['composure'], row['marking'], row['standing_tackle'],
+            row['sliding_tackle']
         ))
 
     conn.commit()
     cursor.close()
     conn.close()
 
+
 def process_message(ch, method, properties, body):
-    # body is a CSV chunk.
-    str_stream = body.decode('utf-8')
-    if str_stream == "__EOF__":
-        print("EOF marker received. Finalizing...")
-        file_content = b"".join(reassembled_data)
-        csv_text = file_content.decode('utf-8')
-        if len(reassembled_data) > 1:
-            csvfile = StringIO(csv_text)
-            df = pd.read_csv(csvfile)
-            print(df)
-            save_csv_to_db(df)
-            # Call a function to save the df data to a database
-            reassembled_data.clear()  # Clear the list after processing
+    """
+    Process incoming RabbitMQ message containing CSV chunks.
+    """
+    global reassembled_data
+    if body.decode('utf-8') == "__EOF__":
+        csv_data = b"".join(reassembled_data).decode('utf-8')
+        df = pd.read_csv(StringIO(csv_data))
+        save_csv_to_db(df)
+        reassembled_data = []  # Clear for the next file
     else:
-        print(body)
         reassembled_data.append(body)
 
 def main():
+    """
+    Main RabbitMQ consumer loop.
+    """
     credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PW)
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=RABBITMQ_PORT, credentials=credentials))
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host=RABBITMQ_HOST, port=RABBITMQ_PORT, credentials=credentials)
+    )
     channel = connection.channel()
     channel.queue_declare(queue=QUEUE_NAME)
     channel.basic_consume(queue=QUEUE_NAME, on_message_callback=process_message, auto_ack=True)
