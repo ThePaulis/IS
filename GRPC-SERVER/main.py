@@ -21,6 +21,15 @@ def validate_csv(file_path):
         raise ValueError(f"CSV file does not match the expected pattern.")
     return df
 
+def validate_xml_content(xml_content):
+    xml_tree = etree.fromstring(xml_content.encode('utf-8'))
+    with open("schema.xsd", 'r', encoding='utf-8') as schema_file:
+        schema_content = schema_file.read()
+    xml_schema = etree.XMLSchema(etree.fromstring(schema_content.encode('utf-8')))
+    if not xml_schema.validate(xml_tree):
+        raise ValueError(f"XML content does not match the expected schema.")
+    return xml_tree
+
 def save_csv_file(file_name, file_content):
     temp_csv_file_path = os.path.join(MEDIA_PATH, f"{file_name}_temp.csv")
     with open(temp_csv_file_path, 'wb') as f:
@@ -44,11 +53,16 @@ def save_csv_file(file_name, file_content):
 def convert_csv_to_xml(csv_file_path):
     df = validate_csv(csv_file_path)
     xml_content = df.to_xml(root_name="data", row_name="row", index=False)
+    validate_xml_content(xml_content)
+    xml_path = save_xml_file(xml_content, csv_file_path)
+    return xml_content, xml_path
+
+def save_xml_file(xml_content, csv_file_path):
     xml_file_path = os.path.join(MEDIA_PATH, f"{os.path.basename(csv_file_path).replace('.csv', '.xml')}")
     with open(xml_file_path, 'w', encoding='utf-8') as xml_file:
         xml_file.write(xml_content)
     logger.info(f"XML file saved successfully: {xml_file_path}")
-    return xml_content, xml_file_path
+    return xml_file_path
 
 def parse_xml(xml_content):
     xml_tree = etree.fromstring(xml_content.encode('utf-8'))
@@ -67,7 +81,7 @@ def parse_xml(xml_content):
         })
     return data
 
-def save_data_to_db(data, csv_file_path, xml_file_path):
+def save_data_to_db(csv_file_path, xml_file_path):
     logger.info(f"Connecting to DB at {DBHOST}:{DBPORT}")
     conn = pg8000.connect(
         user=DBUSERNAME,
@@ -103,8 +117,7 @@ class FileProcessingService(server_Services_pb2_grpc.FileProcessingServiceServic
         try:
             csv_file_path = save_csv_file(request.file_name, request.file)
             xml_content, xml_file_path = convert_csv_to_xml(csv_file_path)
-            data = parse_xml(xml_content)
-            save_data_to_db(data, csv_file_path, xml_file_path)
+            save_data_to_db(csv_file_path, xml_file_path)
             return server_Services_pb2.CsvToXmlResponse(xml_content=xml_content)
         except Exception as e:
             logger.error(f"Error during CSV to XML conversion: {str(e)}", exc_info=True)
@@ -122,20 +135,25 @@ class FileProcessingService(server_Services_pb2_grpc.FileProcessingServiceServic
                 database=DBNAME
             )
             cursor = conn.cursor()
-            cursor.execute("SELECT xml_path FROM files WHERE id = %s", (request.file_id,))
-            result = cursor.fetchone()
-            if not result:
-                context.set_details(f"File with ID {request.file_id} not found")
+            cursor.execute("SELECT xml_path FROM files")
+            results = cursor.fetchall()
+            if not results:
+                context.set_details("No files found")
                 context.set_code(grpc.StatusCode.NOT_FOUND)
                 return server_Services_pb2.SubXmlResponse(subxml_content="")
 
-            xml_file_path = result[0]
-            with open(xml_file_path, 'r', encoding='utf-8') as xml_file:
-                xml_content = xml_file.read()
+            subxml_content = ""
+            for result in results:
+                xml_file_path = result[0]
+                with open(xml_file_path, 'r', encoding='utf-8') as xml_file:
+                    xml_content = xml_file.read()
 
-            xml_tree = etree.fromstring(xml_content.encode('utf-8'))
-            subxml_tree = xml_tree.xpath(f"//row[warehouse='{request.warehouse_name}']")
-            subxml_content = etree.tostring(subxml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
+                xml_tree = etree.fromstring(xml_content.encode('utf-8'))
+                subxml_tree = xml_tree.xpath(f"{request.xpath}")
+                if isinstance(subxml_tree, list):
+                    subxml_content += ''.join([etree.tostring(element, pretty_print=True, encoding='utf-8').decode('utf-8') for element in subxml_tree])
+                else:
+                    subxml_content += etree.tostring(subxml_tree, pretty_print=True, encoding='utf-8').decode('utf-8')
 
             return server_Services_pb2.SubXmlResponse(subxml_content=subxml_content)
         except Exception as e:
@@ -173,8 +191,9 @@ class SendFileService(server_Services_pb2_grpc.SendFileServiceServicer):
             file_path = os.path.join(MEDIA_PATH, file_name)
             
             # Write the collected data to the file at the end
-            with open(file_path, "wb") as f:
-                f.write(file_content)
+            save_csv_file(file_path, file_content)
+            xml_content, xml_file_path = convert_csv_to_xml(file_path)
+            save_data_to_db(file_path, xml_file_path)
             
             return server_Services_pb2.SendFileChunksResponse(success=True, message='File imported')
         except Exception as e:

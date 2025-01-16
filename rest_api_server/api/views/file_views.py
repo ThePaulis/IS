@@ -55,27 +55,20 @@ class FileUploadView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class GetSubXmlView(APIView):
+class GetSubXmlWarehouseView(APIView):
     def post(self, request):
-        file_id = request.data.get('file_id')
         warehouse_name = request.data.get('warehouse_name')
 
-        if not file_id or not warehouse_name:
-            return Response({"error": "file_id and warehouse_name are required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            file_id = int(file_id)
-        except ValueError:
-            return Response({"error": "file_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+        if not warehouse_name:
+            return Response({"error": " warehouse_name is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Connect to the gRPC service
         channel = grpc.insecure_channel(f'{GRPC_HOST}:{GRPC_PORT}')
         stub = server_services_pb2_grpc.FileProcessingServiceStub(channel)
-
+        xpath = f"//row[warehouse='{warehouse_name}']"
         # Prepare gRPC request
         grpc_request = server_services_pb2.SubXmlRequest(
-            file_id=file_id,
-            warehouse_name=warehouse_name
+            xpath=xpath
         )
 
         # Send the request to the gRPC service and get the response
@@ -88,6 +81,56 @@ class GetSubXmlView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
+class GetSubXmPaymentMethodView(APIView):
+    def post(self, request):
+        payment = request.data.get('payment_method')
+
+        if not payment:
+            return Response({"error": "payment_method is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Connect to the gRPC service
+        channel = grpc.insecure_channel(f'{GRPC_HOST}:{GRPC_PORT}')
+        stub = server_services_pb2_grpc.FileProcessingServiceStub(channel)
+        xpath = f"//row[payment='{payment}']"
+        # Prepare gRPC request
+        grpc_request = server_services_pb2.SubXmlRequest(
+            xpath=xpath
+        )
+
+        # Send the request to the gRPC service and get the response
+        try:
+            response = stub.GetSubXml(grpc_request)
+            return Response({"subxml_content": response.subxml_content}, status=status.HTTP_200_OK)
+        except grpc.RpcError as e:
+            return Response(
+                {"error": f"gRPC call failed: {e.details()}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+class GetSubXmlProductLine(APIView):
+    def post(self, request):
+        product_line = request.data.get('product_line')
+
+        if not product_line:
+            return Response({"error": "product_line is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Connect to the gRPC service
+        channel = grpc.insecure_channel(f'{GRPC_HOST}:{GRPC_PORT}')
+        stub = server_services_pb2_grpc.FileProcessingServiceStub(channel)
+        xpath = f"//row[product_line='{product_line}']"
+        # Prepare gRPC request
+        grpc_request = server_services_pb2.SubXmlRequest(
+            xpath=xpath
+        )
+
+        # Send the request to the gRPC service and get the response
+        try:
+            response = stub.GetSubXml(grpc_request)
+            return Response({"subxml_content": response.subxml_content}, status=status.HTTP_200_OK)
+        except grpc.RpcError as e:
+            return Response(
+                {"error": f"gRPC call failed: {e.details()}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )     
 class FileUploadChunksView(APIView):
     def post(self, request):
         serializer = FileUploadSerializer(data=request.data)
