@@ -1,9 +1,14 @@
+import logging
 from django.http import JsonResponse
 from rest_framework.views import APIView
 from .schema import schema
 
+# Configure logger
+logging.basicConfig(level=logging.INFO)
+
 class WarehousesView(APIView):
     def get(self, request):
+        logging.info('Fetching all warehouses')
         query = '''
         {
             allWarehouses {
@@ -24,3 +29,4 @@ class WarehousesView(APIView):
 
         # Explicitly handle data serialization for safe JSON responses
         return JsonResponse(result.data or {}, safe=False)
+    

@@ -7,6 +7,7 @@ class GetAllSales(APIView):
     def get(self, request):
         with connection.cursor() as cursor:
             cursor.execute("""
+                DROP VIEW IF EXISTS sales_view;
                 CREATE VIEW sales_view AS
                 SELECT 
                     s.id, s.date, s.total,
@@ -19,7 +20,7 @@ class GetAllSales(APIView):
                 JOIN warehouse w ON s.warehouse_id = w.id
                 JOIN client_type c ON s.client_type_id = c.id
                 JOIN product_line p ON s.product_line_id = p.id
-                JOIN payment pm ON s.payment_id = pm.id;    
+                JOIN payment pm ON s.payment_id = pm.id;
 
                 """)
             cursor.execute("SELECT * FROM sales_view")

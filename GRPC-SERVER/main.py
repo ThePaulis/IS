@@ -40,7 +40,7 @@ def save_csv_file(file_name, file_content):
         validate_csv(temp_csv_file_path)
         
         # If valid, rename the temporary file to the final file name
-        csv_file_path = os.path.join(MEDIA_PATH, f"{file_name}.csv")
+        csv_file_path = os.path.join(MEDIA_PATH, f"{file_name}")
         os.rename(temp_csv_file_path, csv_file_path)
         logger.info(f"CSV file saved successfully: {csv_file_path}")
         return csv_file_path
@@ -168,6 +168,7 @@ class SendFileService(server_Services_pb2_grpc.SendFileServiceServicer):
         try:
             rabbit_connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=RABBITMQ_PORT, credentials=pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PW)))
             rabbit_channel = rabbit_connection.channel()
+            logging.info("Connected to RabbitMQ")
             rabbit_channel.queue_declare(queue='csv_chunks')
             os.makedirs(MEDIA_PATH, exist_ok=True)
             file_name = None
@@ -189,7 +190,7 @@ class SendFileService(server_Services_pb2_grpc.SendFileServiceServicer):
             # Combine all chunks into a single bytes object
             file_content = b"".join(file_chunks)
             file_path = os.path.join(MEDIA_PATH, file_name)
-            
+            logging.info(f"Received file: {file_path}")
             # Write the collected data to the file at the end
             save_csv_file(file_path, file_content)
             xml_content, xml_file_path = convert_csv_to_xml(file_path)

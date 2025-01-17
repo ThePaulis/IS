@@ -24,7 +24,7 @@ services:
 
   rest_api_server:
     build: ./rest_api_server
-    container_name: rest_api_server
+    container_name: rest-api-server
     ports:
       - "8000:8000"
     environment:
@@ -39,9 +39,9 @@ services:
       - db
       - grpc-server
 
-  graphql_api:
+  graphql-api:
     build: ./graphql_api
-    container_name: graphql_api
+    container_name: graphql-api
     ports:
       - "8001:8001"
     environment:
@@ -93,6 +93,17 @@ services:
       - db
       - grpc-server
 
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REST_API_BASE_URL=http://rest-api-server:8000
+      - GRAPHQL_API_BASE_URL=http://graphql-api:8001
+      - NEXT_PUBLIC_URL=http://127.0.0.1:3000
+    depends_on:
+      - rest_api_server
+      - graphql-api
 volumes:
   grpc-server:
   pgdata:
