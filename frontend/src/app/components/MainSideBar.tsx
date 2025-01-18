@@ -64,7 +64,7 @@ const Sidebar = ({ searchValue } : { searchValue: string }) => {
                     <ListItemText className="text-gray-600" primary="Upload File" />
                 </ListItemButton>
                 <ListItemButton onClick={handleXmlViewerDialog}>
-                    <ListItemText className="text-gray-600" primary="XMLs" />
+                    <ListItemText className="text-gray-600" primary="SUB-XMLs" />
                 </ListItemButton>
             </List>
         </>

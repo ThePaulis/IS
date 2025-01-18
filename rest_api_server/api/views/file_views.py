@@ -60,13 +60,11 @@ class GetSubXmlWarehouseView(APIView):
         warehouse_name = request.data.get('warehouse_name')
 
         if not warehouse_name:
-            return Response({"error": " warehouse_name is required"}, status=status.HTTP_400_BAD_REQUEST)
-
+            warehouse_name = ''
         # Connect to the gRPC service
         channel = grpc.insecure_channel(f'{GRPC_HOST}:{GRPC_PORT}')
         stub = server_services_pb2_grpc.FileProcessingServiceStub(channel)
-        xpath = f"//row[warehouse='{warehouse_name}']"
-        # Prepare gRPC request
+        xpath = f"//row[contains(translate(warehouse, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{warehouse_name.lower()}')]"        # Prepare gRPC request
         grpc_request = server_services_pb2.SubXmlRequest(
             xpath=xpath
         )
@@ -86,13 +84,11 @@ class GetSubXmPaymentMethodView(APIView):
         payment = request.data.get('payment_method')
 
         if not payment:
-            return Response({"error": "payment_method is required"}, status=status.HTTP_400_BAD_REQUEST)
-
+            payment = ''
         # Connect to the gRPC service
         channel = grpc.insecure_channel(f'{GRPC_HOST}:{GRPC_PORT}')
         stub = server_services_pb2_grpc.FileProcessingServiceStub(channel)
-        xpath = f"//row[payment='{payment}']"
-        # Prepare gRPC request
+        xpath = f"//row[contains(translate(payment, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{payment.lower()}')]"        # Prepare gRPC request
         grpc_request = server_services_pb2.SubXmlRequest(
             xpath=xpath
         )
@@ -111,13 +107,11 @@ class GetSubXmlProductLine(APIView):
         product_line = request.data.get('product_line')
 
         if not product_line:
-            return Response({"error": "product_line is required"}, status=status.HTTP_400_BAD_REQUEST)
-
+            product_line = ''
         # Connect to the gRPC service
         channel = grpc.insecure_channel(f'{GRPC_HOST}:{GRPC_PORT}')
         stub = server_services_pb2_grpc.FileProcessingServiceStub(channel)
-        xpath = f"//row[product_line='{product_line}']"
-        # Prepare gRPC request
+        xpath = f"//row[contains(translate(product_line, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{product_line.lower()}')]"        # Prepare gRPC request
         grpc_request = server_services_pb2.SubXmlRequest(
             xpath=xpath
         )
