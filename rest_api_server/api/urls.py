@@ -1,6 +1,6 @@
 from django.urls import path
 from .views.file_views import FileUploadView, GetSubXmlWarehouseView, FileUploadChunksView, GetSubXmPaymentMethodView, GetSubXmlProductLine
-from .views.sales import GetAllSales
+from .views.sales import GetAllSales, GetSalesByWarehouse
 from .views.files import GetAllFiles
 
 urlpatterns = [
@@ -11,4 +11,5 @@ urlpatterns = [
     path('upload-file/by-chunks', FileUploadChunksView.as_view(), name='upload-file-by-chunks'),
     path('subxml-payment-method/', GetSubXmPaymentMethodView.as_view(), name='get-subxml-payment-method'),
     path('subxml-product-line/', GetSubXmlProductLine.as_view(), name='get-subxml-product-line'),
+    path('sales/warehouse/', GetSalesByWarehouse.as_view(), name='sales-by-warehouse'),
 ]

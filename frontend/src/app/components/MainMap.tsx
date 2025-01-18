@@ -1,8 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from 'react';
-import { LayerGroup, LayersControl, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
-
+import { LayerGroup, LayersControl, MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
@@ -10,10 +9,12 @@ import { Warehouse } from '../interface';
 import L from 'leaflet';
 import Supercluster from 'supercluster';
 import { toast } from 'react-toastify';
+import WarehouseDetailsDialog from './WarehouseDetailsDialog';
 
 const LeafleatMap = ({ warehouses, updatePoint } : { warehouses: Warehouse[], updatePoint: (id: number, latitude: number, longitude: number) => any }) => {
     const [clusters, setClusters]   = useState<any[]>([])
     const mapRef                    = useRef<any>(null)
+    const warehouseDetailsDialogRef = useRef<any>(null)
 
     const superclusterRef = useRef(
         new Supercluster({
@@ -114,59 +115,66 @@ const LeafleatMap = ({ warehouses, updatePoint } : { warehouses: Warehouse[], up
         }
     }
 
+    const onMarkerClick = (warehouse: any) => {
+        if (warehouseDetailsDialogRef.current) {
+            warehouseDetailsDialogRef.current.handleClickOpen(warehouse);
+        }
+    }
+
     return (
-        <MapContainer
-            center={[0, 0]}
-            zoom={3}
-            scrollWheelZoom={true}
-            style={{ height: "100%", width: "100%" }}
-            className='relative'
-            ref={mapRef}
-        >
-            <LayersControl position="topright">
-                {/* Base Layers */}
-                <LayersControl.BaseLayer checked name="OpenStreetMap">
-                    <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                </LayersControl.BaseLayer>
+        <>
+            <MapContainer
+                center={[0, 0]}
+                zoom={3}
+                scrollWheelZoom={true}
+                style={{ height: "100%", width: "100%" }}
+                className='relative'
+                ref={mapRef}
+            >
+                <LayersControl position="topright">
+                    {/* Base Layers */}
+                    <LayersControl.BaseLayer checked name="OpenStreetMap">
+                        <TileLayer
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                    </LayersControl.BaseLayer>
 
-                <LayersControl.BaseLayer name="CartoDB Positron">
-                    <TileLayer
-                        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                        attribution='&copy; <a href="https://www.carto.com/">CARTO</a>'
-                    />
-                </LayersControl.BaseLayer>
+                    <LayersControl.BaseLayer name="CartoDB Positron">
+                        <TileLayer
+                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                            attribution='&copy; <a href="https://www.carto.com/">CARTO</a>'
+                        />
+                    </LayersControl.BaseLayer>
 
-                <LayersControl.BaseLayer name="Dark Map">
-                    <TileLayer
-                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                        attribution='&copy; <a href="https://www.carto.com/">CARTO</a>'
-                    />
-                </LayersControl.BaseLayer>
-            
-                <LayersControl.Overlay checked name="Warehouses">
-                    <LayerGroup>
-                        {clusters.map((cluster: any) => {
-                            const [longitude, latitude] = cluster.geometry.coordinates;
-                            const { cluster: isCluster, point_count: pointCount } = cluster.properties;
+                    <LayersControl.BaseLayer name="Dark Map">
+                        <TileLayer
+                            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                            attribution='&copy; <a href="https://www.carto.com/">CARTO</a>'
+                        />
+                    </LayersControl.BaseLayer>
+                
+                    <LayersControl.Overlay checked name="Warehouses">
+                        <LayerGroup>
+                            {clusters.map((cluster: any) => {
+                                const [longitude, latitude] = cluster.geometry.coordinates;
+                                const { cluster: isCluster, point_count: pointCount } = cluster.properties;
 
-                            if (isCluster) {
-                                return (
-                                    <Marker
-                                    key={`cluster-${cluster.id}`}
-                                    position={[latitude, longitude]}
-                                    icon={L.divIcon({
-                                        html: `<div style="background-color:rgba(0, 123, 255, 0.8); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
-                                            ${pointCount}
-                                        </div>`,
-                                        className: "cluster-marker",
-                                        iconSize: [30, 30],
-                                    })}
-                                    />
-                                );
-                            }
+                                if (isCluster) {
+                                    return (
+                                        <Marker
+                                        key={`cluster-${cluster.id}`}
+                                        position={[latitude, longitude]}
+                                        icon={L.divIcon({
+                                            html: `<div style="background-color:rgba(0, 123, 255, 0.8); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                                                ${pointCount}
+                                            </div>`,
+                                            className: "cluster-marker",
+                                            iconSize: [30, 30],
+                                        })}
+                                        />
+                                    );
+                                }
 
                                 return (
                                     <Marker
@@ -175,25 +183,19 @@ const LeafleatMap = ({ warehouses, updatePoint } : { warehouses: Warehouse[], up
                                         draggable={true}
                                         eventHandlers={{
                                             dragend: (e) => onHandleDragMarkerOver(e, cluster.properties.id),
+                                            click: () => onMarkerClick(cluster.properties),
                                         }}
-                                    >
-                                        <Popup>
-                                            <div>
-                                                <p>Marker ID: {cluster.properties.id}</p>
-                                                <p>Name: {cluster.properties.name}</p>
-                                                <p>Lat: {cluster.properties.latitude}</p>
-                                                <p>Lng: {cluster.properties.longitude}</p>
-                                            </div>
-                                        </Popup>
-                                    </Marker>
+                                    />
                                 );
                         })}
                     </LayerGroup>
                 </LayersControl.Overlay>
             </LayersControl>
-               
+                
             <MapEvents />
         </MapContainer>
+        <WarehouseDetailsDialog ref={warehouseDetailsDialogRef} />
+        </>
     );
 };
 
