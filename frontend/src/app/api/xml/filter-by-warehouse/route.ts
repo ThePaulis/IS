@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
 
         const jsonResponse = await promise.json();
         const subxmlContent = jsonResponse.subxml_content;
-        console.log(subxmlContent)
         const wrappedSubxmlContent = `<Sales>${subxmlContent}</Sales>`;
         return new Response(wrappedSubxmlContent, { headers: { "Content-Type": "text/xml" } });
     }catch(e){
