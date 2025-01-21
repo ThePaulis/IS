@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from rest_framework.views import APIView
 from .schema import schema
 
+
 class WarehousesView(APIView):
     def get(self, request):
         query = '''
