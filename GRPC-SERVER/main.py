@@ -221,7 +221,6 @@ class FileProcessingService(server_Services_pb2_grpc.FileProcessingServiceServic
             context.set_code(grpc.StatusCode.INTERNAL)
             return server_Services_pb2.SubXmlResponse(subxml_content="")
 
-
 class SendFileService(server_Services_pb2_grpc.SendFileServiceServicer):
     def SendFileChunks(self, request_iterator, context):
         try:
@@ -231,6 +230,7 @@ class SendFileService(server_Services_pb2_grpc.SendFileServiceServicer):
             rabbit_channel = rabbit_connection.channel()
             rabbit_channel.queue_declare(queue='csv_chunks')
             os.makedirs(MEDIA_PATH, exist_ok=True)
+
             file_name = None
             file_chunks = []  # Store all chunks in memory
 
@@ -255,10 +255,34 @@ class SendFileService(server_Services_pb2_grpc.SendFileServiceServicer):
             with open(file_path, "wb") as f:
                 f.write(file_content)
 
-            return server_Services_pb2.SendFileChunksResponse(success=True, message='File imported')
+            # Step 2: Save CSV and convert it to XML
+            try:
+                # Ensure the correct file name is used for CSV (avoid duplicate .csv extension)
+                if not file_name.endswith(".csv"):
+                    csv_file_path = save_csv_file(file_name, file_content)
+                else:
+                    # Remove the extra .csv if it exists
+                    csv_file_path = save_csv_file(file_name.replace(".csv", ""), file_content)
+
+                # Step 3: Convert CSV to XML
+                xml_content, xml_file_path = convert_csv_to_xml(csv_file_path)
+
+                # Step 4: Save both CSV and XML file paths to the database
+                data = parse_xml(xml_content)
+                save_data_to_db(data, csv_file_path, xml_file_path)
+
+                # Return success response with message
+                return server_Services_pb2.SendFileChunksResponse(success=True, message='File and XML processed successfully')
+
+            except Exception as e:
+                logger.error(f"Error during CSV to XML conversion: {str(e)}", exc_info=True)
+                return server_Services_pb2.SendFileChunksResponse(success=False, message=f"Error during CSV to XML: {str(e)}")
+
         except Exception as e:
             logger.error(f"Error: {str(e)}", exc_info=True)
             return server_Services_pb2.SendFileChunksResponse(success=False, message=str(e))
+
+
 
 
 def serve():

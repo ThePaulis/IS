@@ -1,59 +1,60 @@
 from django.db import models
 
-class Warehouse(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+class Player(models.Model):
+    name = models.CharField(max_length=255)
+    full_name = models.CharField(max_length=255)
+    birth_date = models.CharField(max_length=255)
+    age = models.CharField(max_length=255)
+    height_cm = models.CharField(max_length=255)
+    weight_kgs = models.CharField(max_length=255)
+    positions = models.CharField(max_length=255)
+    nationality = models.CharField(max_length=255)
+    overall_rating = models.CharField(max_length=255)
+    potential = models.CharField(max_length=255)
+    value_euro = models.CharField(max_length=255)
+    wage_euro = models.CharField(max_length=255)
+    preferred_foot = models.CharField(max_length=255)
+    international_reputation = models.CharField(max_length=255)
+    weak_foot = models.CharField(max_length=255)
+    skill_moves = models.CharField(max_length=255)
+    body_type = models.CharField(max_length=255)
+    release_clause_euro = models.CharField(max_length=255)
+    national_team = models.CharField(max_length=255)
+    national_rating = models.CharField(max_length=255)
+    national_team_position = models.CharField(max_length=255)
+    national_jersey_number = models.CharField(max_length=255)
+    crossing = models.CharField(max_length=255)
+    finishing = models.CharField(max_length=255)
+    heading_accuracy = models.CharField(max_length=255)
+    short_passing = models.CharField(max_length=255)
+    volleys = models.CharField(max_length=255)
+    dribbling = models.CharField(max_length=255)
+    curve = models.CharField(max_length=255)
+    freekick_accuracy = models.CharField(max_length=255)
+    long_passing = models.CharField(max_length=255)
+    ball_control = models.CharField(max_length=255)
+    acceleration = models.CharField(max_length=255)
+    sprint_speed = models.CharField(max_length=255)
+    agility = models.CharField(max_length=255)
+    reactions = models.CharField(max_length=255)
+    balance = models.CharField(max_length=255)
+    shot_power = models.CharField(max_length=255)
+    jumping = models.CharField(max_length=255)
+    stamina = models.CharField(max_length=255)
+    strength = models.CharField(max_length=255)
+    long_shots = models.CharField(max_length=255)
+    aggression = models.CharField(max_length=255)
+    interceptions = models.CharField(max_length=255)
+    positioning = models.CharField(max_length=255)
+    vision = models.CharField(max_length=255)
+    penalties = models.CharField(max_length=255)
+    composure = models.CharField(max_length=255)
+    marking = models.CharField(max_length=255)
+    standing_tackle = models.CharField(max_length=255)
+    sliding_tackle = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        db_table = 'warehouse'
-
-
-class Payment(models.Model):
-    method = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.method
-
-    class Meta:
-        db_table = 'payment'
-
-
-class ClientType(models.Model):
-    type = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.type
-
-    class Meta:
-        db_table = 'client_type'
-
-
-class ProductLine(models.Model):
-    line = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.line
-
-    class Meta:
-        db_table = 'product_line'
-
-
-class Sales(models.Model):
-    date = models.DateField()
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
-    client_type = models.ForeignKey(ClientType, on_delete=models.CASCADE)
-    product_line = models.ForeignKey(ProductLine, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-    total = models.DecimalField(max_digits=10, decimal_places=2)
-    payment = models.ForeignKey(Payment, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"Sale on {self.date} - {self.total}"
-
-    class Meta:
-        db_table = 'sales'
+        db_table = 'players'
