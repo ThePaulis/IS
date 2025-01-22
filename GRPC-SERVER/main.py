@@ -39,6 +39,16 @@ def validate_csv(file_path):
     return df
 
 
+def validate_xml_content(xml_content):
+    xml_tree = etree.fromstring(xml_content.encode('utf-8'))
+    with open("schema.xsd", 'r', encoding='utf-8') as schema_file:
+        schema_content = schema_file.read()
+    xml_schema = etree.XMLSchema(etree.fromstring(schema_content.encode('utf-8')))
+    if not xml_schema.validate(xml_tree):
+        raise ValueError(f"XML content does not match the expected schema.")
+    return xml_tree
+
+
 def save_csv_file(file_name, file_content):
     temp_csv_file_path = os.path.join(MEDIA_PATH, f"{file_name}_temp.csv")
     with open(temp_csv_file_path, 'wb') as f:
@@ -77,24 +87,64 @@ def parse_xml(xml_content):
     data = []
 
     for player in players:
-        positions = player.xpath('positions/text()')[0].split(",")  # Handle comma-separated positions
-        data.append({
-            'name': player.xpath('name/text()')[0],
-            'full_name': player.xpath('full_name/text()')[0],
-            'birth_date': player.xpath('birth_date/text()')[0],
-            'age': int(player.xpath('age/text()')[0]),
-            'height_cm': float(player.xpath('height_cm/text()')[0]),
-            'weight_kgs': float(player.xpath('weight_kgs/text()')[0]),
+        # Convert the comma-separated string for positions into a list
+        positions = player.xpath('positions/text()')[0].split(",") if player.xpath('positions/text()') else []
+        player_data = {
+            'name': player.xpath('name/text()')[0] if player.xpath('name/text()') else '',
+            'full_name': player.xpath('full_name/text()')[0] if player.xpath('full_name/text()') else '',
+            'birth_date': player.xpath('birth_date/text()')[0] if player.xpath('birth_date/text()') else '',
+            'age': player.xpath('age/text()')[0] if player.xpath('age/text()') else '',
+            'height_cm': player.xpath('height_cm/text()')[0] if player.xpath('height_cm/text()') else '',
+            'weight_kgs': player.xpath('weight_kgs/text()')[0] if player.xpath('weight_kgs/text()') else '',
             'positions': positions,
-            'nationality': player.xpath('nationality/text()')[0],
-            'overall_rating': int(player.xpath('overall_rating/text()')[0]),
-            'potential': int(player.xpath('potential/text()')[0]),
-            'value_euro': float(player.xpath('value_euro/text()')[0]),
-            'wage_euro': float(player.xpath('wage_euro/text()')[0]),
-        })
+            'nationality': player.xpath('nationality/text()')[0] if player.xpath('nationality/text()') else '',
+            'overall_rating': player.xpath('overall_rating/text()')[0] if player.xpath('overall_rating/text()') else '',
+            'potential': player.xpath('potential/text()')[0] if player.xpath('potential/text()') else '',
+            'value_euro': player.xpath('value_euro/text()')[0] if player.xpath('value_euro/text()') else '',
+            'wage_euro': player.xpath('wage_euro/text()')[0] if player.xpath('wage_euro/text()') else '',
+            'preferred_foot': player.xpath('preferred_foot/text()')[0] if player.xpath('preferred_foot/text()') else '',
+            'international_reputation': player.xpath('international_reputation/text()')[0] if player.xpath('international_reputation/text()') else '',
+            'weak_foot': player.xpath('weak_foot/text()')[0] if player.xpath('weak_foot/text()') else '',
+            'skill_moves': player.xpath('skill_moves/text()')[0] if player.xpath('skill_moves/text()') else '',
+            'body_type': player.xpath('body_type/text()')[0] if player.xpath('body_type/text()') else '',
+            'release_clause_euro': player.xpath('release_clause_euro/text()')[0] if player.xpath('release_clause_euro/text()') else '',
+            'national_team': player.xpath('national_team/text()')[0] if player.xpath('national_team/text()') else '',
+            'national_rating': player.xpath('national_rating/text()')[0] if player.xpath('national_rating/text()') else '',
+            'national_team_position': player.xpath('national_team_position/text()')[0] if player.xpath('national_team_position/text()') else '',
+            'national_jersey_number': player.xpath('national_jersey_number/text()')[0] if player.xpath('national_jersey_number/text()') else '',
+            'crossing': player.xpath('crossing/text()')[0] if player.xpath('crossing/text()') else '',
+            'finishing': player.xpath('finishing/text()')[0] if player.xpath('finishing/text()') else '',
+            'heading_accuracy': player.xpath('heading_accuracy/text()')[0] if player.xpath('heading_accuracy/text()') else '',
+            'short_passing': player.xpath('short_passing/text()')[0] if player.xpath('short_passing/text()') else '',
+            'volleys': player.xpath('volleys/text()')[0] if player.xpath('volleys/text()') else '',
+            'dribbling': player.xpath('dribbling/text()')[0] if player.xpath('dribbling/text()') else '',
+            'curve': player.xpath('curve/text()')[0] if player.xpath('curve/text()') else '',
+            'freekick_accuracy': player.xpath('freekick_accuracy/text()')[0] if player.xpath('freekick_accuracy/text()') else '',
+            'long_passing': player.xpath('long_passing/text()')[0] if player.xpath('long_passing/text()') else '',
+            'ball_control': player.xpath('ball_control/text()')[0] if player.xpath('ball_control/text()') else '',
+            'acceleration': player.xpath('acceleration/text()')[0] if player.xpath('acceleration/text()') else '',
+            'sprint_speed': player.xpath('sprint_speed/text()')[0] if player.xpath('sprint_speed/text()') else '',
+            'agility': player.xpath('agility/text()')[0] if player.xpath('agility/text()') else '',
+            'reactions': player.xpath('reactions/text()')[0] if player.xpath('reactions/text()') else '',
+            'balance': player.xpath('balance/text()')[0] if player.xpath('balance/text()') else '',
+            'shot_power': player.xpath('shot_power/text()')[0] if player.xpath('shot_power/text()') else '',
+            'jumping': player.xpath('jumping/text()')[0] if player.xpath('jumping/text()') else '',
+            'stamina': player.xpath('stamina/text()')[0] if player.xpath('stamina/text()') else '',
+            'strength': player.xpath('strength/text()')[0] if player.xpath('strength/text()') else '',
+            'long_shots': player.xpath('long_shots/text()')[0] if player.xpath('long_shots/text()') else '',
+            'aggression': player.xpath('aggression/text()')[0] if player.xpath('aggression/text()') else '',
+            'interceptions': player.xpath('interceptions/text()')[0] if player.xpath('interceptions/text()') else '',
+            'positioning': player.xpath('positioning/text()')[0] if player.xpath('positioning/text()') else '',
+            'vision': player.xpath('vision/text()')[0] if player.xpath('vision/text()') else '',
+            'penalties': player.xpath('penalties/text()')[0] if player.xpath('penalties/text()') else '',
+            'composure': player.xpath('composure/text()')[0] if player.xpath('composure/text()') else '',
+            'marking': player.xpath('marking/text()')[0] if player.xpath('marking/text()') else '',
+            'standing_tackle': player.xpath('standing_tackle/text()')[0] if player.xpath('standing_tackle/text()') else '',
+            'sliding_tackle': player.xpath('sliding_tackle/text()')[0] if player.xpath('sliding_tackle/text()') else '',
+        }
+        data.append(player_data)
 
     return data
-
 
 def save_data_to_db(data, csv_file_path, xml_file_path):
     logger.info(f"Connecting to DB at {DBHOST}:{DBPORT}")

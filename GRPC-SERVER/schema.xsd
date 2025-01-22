@@ -1,0 +1,65 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="players">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="player" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="name" type="xs:string"/>
+                            <xs:element name="full_name" type="xs:string"/>
+                            <xs:element name="birth_date" type="xs:string"/>
+                            <xs:element name="age" type="xs:string"/>
+                            <xs:element name="height_cm" type="xs:string"/>
+                            <xs:element name="weight_kgs" type="xs:string"/>
+                            <xs:element name="positions" type="xs:string"/>
+                            <xs:element name="nationality" type="xs:string"/>
+                            <xs:element name="overall_rating" type="xs:string"/>
+                            <xs:element name="potential" type="xs:string"/>
+                            <xs:element name="value_euro" type="xs:string"/>
+                            <xs:element name="wage_euro" type="xs:string"/>
+                            <xs:element name="preferred_foot" type="xs:string"/>
+                            <xs:element name="international_reputation" type="xs:string"/>
+                            <xs:element name="weak_foot" type="xs:string"/>
+                            <xs:element name="skill_moves" type="xs:string"/>
+                            <xs:element name="body_type" type="xs:string"/>
+                            <xs:element name="release_clause_euro" type="xs:string"/>
+                            <xs:element name="national_team" type="xs:string"/>
+                            <xs:element name="national_rating" type="xs:string"/>
+                            <xs:element name="national_team_position" type="xs:string"/>
+                            <xs:element name="national_jersey_number" type="xs:string"/>
+                            <xs:element name="crossing" type="xs:string"/>
+                            <xs:element name="finishing" type="xs:string"/>
+                            <xs:element name="heading_accuracy" type="xs:string"/>
+                            <xs:element name="short_passing" type="xs:string"/>
+                            <xs:element name="volleys" type="xs:string"/>
+                            <xs:element name="dribbling" type="xs:string"/>
+                            <xs:element name="curve" type="xs:string"/>
+                            <xs:element name="freekick_accuracy" type="xs:string"/>
+                            <xs:element name="long_passing" type="xs:string"/>
+                            <xs:element name="ball_control" type="xs:string"/>
+                            <xs:element name="acceleration" type="xs:string"/>
+                            <xs:element name="sprint_speed" type="xs:string"/>
+                            <xs:element name="agility" type="xs:string"/>
+                            <xs:element name="reactions" type="xs:string"/>
+                            <xs:element name="balance" type="xs:string"/>
+                            <xs:element name="shot_power" type="xs:string"/>
+                            <xs:element name="jumping" type="xs:string"/>
+                            <xs:element name="stamina" type="xs:string"/>
+                            <xs:element name="strength" type="xs:string"/>
+                            <xs:element name="long_shots" type="xs:string"/>
+                            <xs:element name="aggression" type="xs:string"/>
+                            <xs:element name="interceptions" type="xs:string"/>
+                            <xs:element name="positioning" type="xs:string"/>
+                            <xs:element name="vision" type="xs:string"/>
+                            <xs:element name="penalties" type="xs:string"/>
+                            <xs:element name="composure" type="xs:string"/>
+                            <xs:element name="marking" type="xs:string"/>
+                            <xs:element name="standing_tackle" type="xs:string"/>
+                            <xs:element name="sliding_tackle" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
