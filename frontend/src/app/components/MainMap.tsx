@@ -42,7 +42,7 @@ const LeafleatMap = ({ warehouses, updatePoint } : { warehouses: Warehouse[], up
     }
     
     useEffect(() => {
-        const geoJSONPlaces = warehouses.map(place => {
+        const geoJSONPlaces = warehouses?.map(place => {
             const geoJSONPlace: any = {
                 type: "Feature",
                 properties: {

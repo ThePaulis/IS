@@ -180,6 +180,7 @@ class SendFileService(server_Services_pb2_grpc.SendFileServiceServicer):
             
                 # Collect the file data chunks
                 file_chunks.append(chunk.data)
+                logging.info(f"Sending chunk {chunk.data}")
             
                 # Send data chunk to the worker
                 rabbit_channel.basic_publish(exchange='', routing_key='csv_chunks', body=chunk.data)

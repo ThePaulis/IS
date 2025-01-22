@@ -134,20 +134,27 @@ class FileUploadChunksView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         if not file:
             return Response({"error": "No file uploaded"}, status=400)
+        
         # Connect to the gRPC service
         channel = grpc.insecure_channel(f'{GRPC_HOST}:{GRPC_PORT}')
         stub = server_services_pb2_grpc.SendFileServiceStub(channel)
 
-        def generate_file_chunks(file, file_name, chunk_size=(64 * 1024)):
+        def generate_file_chunks(file, file_name, min_chunks=4):
+            file.seek(0, os.SEEK_END)
+            file_size = file.tell()
+            file.seek(0, os.SEEK_SET)
+            chunk_size = max(1, file_size // min_chunks)
+            
             try:
                 while chunk := file.read(chunk_size):
                     yield server_services_pb2.SendFileChunksRequest(data=chunk, file_name=file_name)
             except Exception as e:
                 print(f"Error reading file: {e}")
-                raise # Let the exception propagate
+                raise  # Let the exception propagate
+
         # Send file data to gRPC service
         try:
-            response = stub.SendFileChunks(generate_file_chunks(file, file.name, (64 * 1024)))
+            response = stub.SendFileChunks(generate_file_chunks(file, file.name))
             if response.success:
                 return Response({"file_name": file.name}, status=status.HTTP_201_CREATED)
             return Response({"error": f": {response.message}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

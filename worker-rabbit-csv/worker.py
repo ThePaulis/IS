@@ -90,7 +90,9 @@ def save_csv_to_db(data):
     warehouse_locations = {
         'Central': {'latitude': 39.8283, 'longitude': -98.5795},  # Geographic center of the contiguous United States
         'North': {'latitude': 47.6062, 'longitude': -122.3321},  # Seattle, WA
-        'West': {'latitude': 34.0522, 'longitude': -118.2437}    # Los Angeles, CA
+        'West': {'latitude': 34.0522, 'longitude': -118.2437},    # Los Angeles, CA
+        'East': {'latitude': 40.7128, 'longitude': -74.0060},     # New York City, NY
+        'South': {'latitude': 29.7604, 'longitude': -95.3698},    # Houston, TX
     }
 
     for _, row in data.iterrows():
