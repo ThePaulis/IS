@@ -20,16 +20,13 @@ DBPASSWORD = os.getenv('DBPASSWORD', 'mypassword')
 DBNAME = os.getenv('DBNAME', 'mydatabase')
 DBPORT = os.getenv('DBPORT', '5432')
 
-# Configure logging
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 logger = logging.getLogger()
-reassembled_data = []  # Declare reassembled_data at the module level
+reassembled_data = []
 
 
 def handle_invalid_dates_as_strings(df):
-    # Ensure the 'birth_date' column is treated as a string
-    # Invalid dates are turned into "Invalid Date"
     df['birth_date'] = pd.to_datetime(df['birth_date'], errors='coerce').dt.strftime('%Y-%m-%d')
     df['birth_date'] = df['birth_date'].apply(lambda x: 'Invalid Date' if x == 'NaT' else x)
 
@@ -39,13 +36,12 @@ def save_csv_to_db(data):
     conn = pg8000.connect(user=DBUSERNAME, password=DBPASSWORD, database=DBNAME, host=DBHOST, port=DBPORT)
     cursor = conn.cursor()
 
-    # Create Players Table
     create_players_table_query = """
         CREATE TABLE IF NOT EXISTS players (
             id SERIAL PRIMARY KEY,
             name TEXT,
             full_name TEXT,
-            birth_date TEXT,  -- Changed birth_date to TEXT
+            birth_date TEXT,  
             age TEXT,
             height_cm TEXT,
             weight_kgs TEXT,
@@ -98,7 +94,6 @@ def save_csv_to_db(data):
     """
     cursor.execute(create_players_table_query)
 
-    # Insert Data into Players Table
     insert_players_query = """
         INSERT INTO players (
             name, full_name, birth_date, age, height_cm, weight_kgs, positions, nationality, overall_rating, potential,
@@ -117,15 +112,14 @@ def save_csv_to_db(data):
 
     for _, row in data.iterrows():
 
-        # Insert the data into the database
         cursor.execute(insert_players_query, (
             row['name'],
             row['full_name'],
-            row['birth_date'],  # Birth date is stored as a string (TEXT)
+            row['birth_date'],
             row['age'],
             row['height_cm'],
             row['weight_kgs'],
-            row['positions'],  # Use the list of positions
+            row['positions'],
             row['nationality'],
             row['overall_rating'],
             row['potential'],
@@ -178,7 +172,6 @@ def save_csv_to_db(data):
 
 
 def process_message(ch, method, properties, body):
-    # body is a CSV chunk.
     str_stream = body.decode('utf-8')
     if str_stream == "__EOF__":
         print("EOF marker received. Finalizing...")
@@ -188,9 +181,9 @@ def process_message(ch, method, properties, body):
             csvfile = StringIO(csv_text)
             df = pd.read_csv(csvfile)
             print(df)
-            df = handle_invalid_dates_as_strings(df)  # Call function to handle invalid dates as strings
-            save_csv_to_db(df)  # Call function to save the df data to a database
-            reassembled_data.clear()  # Clear the list after processing
+            df = handle_invalid_dates_as_strings(df)
+            save_csv_to_db(df)
+            reassembled_data.clear()
     else:
         print(body)
         reassembled_data.append(body)

@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import WarehousesView
+from .views import PlayersView, PlayersByCountryView
 
 urlpatterns = [
-    path('warehouses/', WarehousesView.as_view(), name='warehouses_list'),
+    path('players/', PlayersView.as_view(), name='warehouses_list'),
+    path('playersByCountry/', PlayersByCountryView.as_view(), name='warehouses_list'),
+
 ]
