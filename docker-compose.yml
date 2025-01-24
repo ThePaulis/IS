@@ -51,7 +51,10 @@ services:
       - DBHOST=db
       - DBPORT=5432
     depends_on:
-      - db
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:latest
@@ -64,6 +67,11 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U myuser -d mydatabase -h localhost" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3.9-management
@@ -73,7 +81,11 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
-
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   worker:
     build: ./worker-rabbit-csv
     ports: 
@@ -89,9 +101,10 @@ services:
       - DBHOST=db
       - DBPORT=5432
     depends_on:
-      - rabbitmq
-      - db
-      - grpc-server
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_healthy
 
   frontend:
     build: ./frontend

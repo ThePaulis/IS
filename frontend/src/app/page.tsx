@@ -57,7 +57,7 @@ export default async function Home({ searchParams }: {searchParams : any}) {
         <Sidebar searchValue={search} />
       </nav>
       <main className="h-full" style={{ marginLeft: 250}}>
-        <LeafleatMap warehouses={mapa_data.data.allWarehouses} updatePoint={updatePoint} />
+        <LeafleatMap warehouses={mapa_data.data.allWarehouses ?? []} updatePoint={updatePoint} />
       </main>
     </div>
   );

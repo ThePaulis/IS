@@ -173,7 +173,6 @@ def process_message(ch, method, properties, body):
             df = pd.read_csv(csvfile)
             print(df)
             save_csv_to_db(df)
-            # Call a function to save the df data to a database
             reassembled_data.clear()  # Clear the list after processing
     else:
         print(body)
